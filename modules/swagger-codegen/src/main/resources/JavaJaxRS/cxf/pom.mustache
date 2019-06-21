@@ -148,6 +148,7 @@
         <version>${cxf-version}</version>
         <scope>compile</scope>
     </dependency>
+{{#jackson}}
     <dependency>
         <groupId>com.fasterxml.jackson.jaxrs</groupId>
         <artifactId>jackson-jaxrs-json-provider</artifactId>
@@ -168,6 +169,14 @@
         <version>${jackson-jaxrs-version}</version>
     </dependency>
 {{/java8}}
+{{/jackson}}
+{{#jsr367}}
+    <dependency>
+        <groupId>javax.json.bind</groupId>
+        <artifactId>javax.json.bind-api</artifactId>
+        <version>1.0</version>
+    </dependency>
+{{/jsr367}}
 {{#useBeanValidationFeature}}    
     <dependency>
         <groupId>org.hibernate</groupId>

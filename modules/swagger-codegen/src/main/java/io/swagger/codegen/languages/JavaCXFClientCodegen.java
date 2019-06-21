@@ -2,12 +2,11 @@
 package io.swagger.codegen.languages;
 
 import java.io.File;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import io.swagger.codegen.CliOption;
 import io.swagger.codegen.CodegenModel;
 import io.swagger.codegen.CodegenOperation;
@@ -31,6 +30,8 @@ private static final Logger LOGGER = LoggerFactory.getLogger(JavaCXFClientCodege
      */
     protected static final String JAXRS_TEMPLATE_DIRECTORY_NAME = "JavaJaxRS";
 
+    public static final String JSON_MAPPING_MODE = "jsonMapping";
+    
     protected boolean useBeanValidation = false;
     
     protected boolean useGenericResponse = false;
@@ -39,6 +40,10 @@ private static final Logger LOGGER = LoggerFactory.getLogger(JavaCXFClientCodege
 
     protected boolean useLoggingFeatureForTests = false;
 
+    protected boolean useJackson = true;
+    
+    protected boolean useJSR367 = false;
+    
     public JavaCXFClientCodegen()
     {
         super();
@@ -74,6 +79,13 @@ private static final Logger LOGGER = LoggerFactory.getLogger(JavaCXFClientCodege
         cliOptions.add(CliOption.newBoolean(USE_LOGGING_FEATURE_FOR_TESTS, "Use Logging Feature for tests"));
 
         cliOptions.add(CliOption.newBoolean(USE_GENERIC_RESPONSE, "Use generic response"));
+        
+        CliOption jsonMode = new CliOption(JSON_MAPPING_MODE, "Option. The Json mapping to use");        
+        Map<String, String> jsonMappingModeOption = new HashMap<>();
+        jsonMappingModeOption.put("jackson", "Use the jackson framework");
+        jsonMappingModeOption.put("jsonb", "Use JSR-367 Json-B annotations");
+        jsonMode.setEnum(jsonMappingModeOption);
+        cliOptions.add(jsonMode);
     }
 
 
@@ -94,7 +106,20 @@ private static final Logger LOGGER = LoggerFactory.getLogger(JavaCXFClientCodege
         if (useGenericResponse) {
             writePropertyBack(USE_GENERIC_RESPONSE, useGenericResponse);
         }
-
+        
+        if ("jackson".equals(additionalProperties.get(JSON_MAPPING_MODE)) || !additionalProperties.containsKey(JSON_MAPPING_MODE)) {
+            writePropertyBack("jackson", true);
+            writePropertyBack("jsr367", false);
+            this.useJackson = true;
+            this.useJSR367 = false;
+        } else if ("jsr367".equals(additionalProperties.get(JSON_MAPPING_MODE)) || !additionalProperties.containsKey(JSON_MAPPING_MODE)) {
+          writePropertyBack("jackson", false);
+          writePropertyBack("jsr367", true);
+          this.useJackson = false;
+          this.useJSR367 = true;
+      }
+        
+        
         this.setUseGzipFeatureForTests(convertPropertyToBooleanAndWriteBack(USE_GZIP_FEATURE_FOR_TESTS));
         this.setUseLoggingFeatureForTests(convertPropertyToBooleanAndWriteBack(USE_LOGGING_FEATURE_FOR_TESTS));
 
@@ -146,18 +171,22 @@ private static final Logger LOGGER = LoggerFactory.getLogger(JavaCXFClientCodege
         return "Generates a Java JAXRS Client based on Apache CXF framework.";
     }
 
+    @Override
     public void setUseBeanValidation(boolean useBeanValidation) {
         this.useBeanValidation = useBeanValidation;
     }
 
+    @Override
     public void setUseGzipFeatureForTests(boolean useGzipFeatureForTests) {
         this.useGzipFeatureForTests = useGzipFeatureForTests;
     }
 
+    @Override
     public void setUseLoggingFeatureForTests(boolean useLoggingFeatureForTests) {
         this.useLoggingFeatureForTests = useLoggingFeatureForTests;
     }
 
+    @Override
     public void setUseGenericResponse(boolean useGenericResponse) {
         this.useGenericResponse = useGenericResponse;
     }
